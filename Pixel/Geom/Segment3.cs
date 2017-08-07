@@ -18,6 +18,11 @@ namespace Pixel.Geom
         {
             return Vector3.zero;
         }
+
+        virtual public Vector3 CalculateNormal(Vector3 p_start, float p_delta)
+        {
+            return Vector3.zero;
+        }
     }
 
     public class LinearSegment3 : Segment3
@@ -26,7 +31,12 @@ namespace Pixel.Geom
         }
 
         override public Vector3 Calculate(Vector3 p_start, float p_delta) {
-            return p_start + p_delta * (end - p_start);
+            return Vector3.Lerp(p_start, end, p_delta);
+        }
+
+        public override Vector3 CalculateNormal(Vector3 p_start, float p_delta)
+        {
+            return new Vector3(-end.y+p_start.y, end.x-p_start.x);
         }
     }
 
@@ -39,9 +49,18 @@ namespace Pixel.Geom
         }
 
 
-       override public Vector3 Calculate(Vector3 p_start, float p_delta) {
+        override public Vector3 Calculate(Vector3 p_start, float p_delta)
+        {
             float inv = (1 - p_delta);
             return inv * inv * p_start + 2 * inv * p_delta * control + p_delta * p_delta * end;
+        }
+
+        public override Vector3 CalculateNormal(Vector3 p_start, float p_delta)
+        {
+            Vector3 startNormal = new Vector3(-control.y + p_start.y, control.x - p_start.x);
+            Vector3 endNormal = new Vector3(-end.y + control.y, end.x - control.x);
+
+            return Vector3.Lerp(startNormal, endNormal, p_delta);
         }
     }
 

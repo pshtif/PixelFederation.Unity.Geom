@@ -69,12 +69,46 @@ namespace Pixel.Geom
                         ratio -= path.strength;
                         lastEnd = path.end;
                     } else {
-                        r = path.Calculate(lastEnd, ratio / path.strength);
+                        return path.Calculate(lastEnd, ratio / path.strength);
+                        break;
                     }
                 }
             }
 
             return r;
+        }
+
+        public Vector3 CalculateNormal(float p_delta)
+        {
+            Vector3 n = Vector3.zero;
+            if (_pathLength == 1)
+            {
+                n = _segments[0].CalculateNormal(start, p_delta);
+            }
+            else if (_pathLength > 1)
+            {
+                float ratio = p_delta * _totalStrength;
+                Vector3 lastEnd = start;
+
+                for (int i = 0; i < _pathLength; ++i)
+                {
+                    Segment3 path = _segments[i];
+
+                    if (ratio > path.strength)
+                    {
+                        ratio -= path.strength;
+                        lastEnd = path.end;
+                    } else if (ratio == path.strength && i < _pathLength-1) {
+                        n = Vector3.Lerp(path.CalculateNormal(lastEnd, 1), _segments[i+1].CalculateNormal(path.end, 0), .5f);
+                        break;
+                    } else {
+                        n = path.CalculateNormal(lastEnd, ratio / path.strength);
+                        break;
+                    }
+                }
+            }
+
+            return n;
         }
 
         static public Curve3 CreateLine(Vector3 p_end, float p_strength = 1) {
